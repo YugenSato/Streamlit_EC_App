@@ -5,9 +5,9 @@ from time import sleep
 import pandas as pd
 
 RAKUTEN_CLIENT_ME = {
-    'APPLICATION_ID':APPLICATION_ID,
-    'APPLICATION_SECRET':APPLICATION_SECRET,
-    'AFF_ID':AFF_ID,
+    'APPLICATION_ID':st.secrets["APPLICATION_ID"],
+    'APPLICATION_SECRET':st.secrets["APPLICATION_SECRET"],
+    'AFF_ID':st.secrets["AFF_ID"],
     'REQ_URL':'https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706',
     'WANT_ITEMS':['itemName',
                   'genreId',
@@ -27,7 +27,7 @@ RAKUTEN_CLIENT_ME = {
 
 YAHOO_CLIENT_ME = {
     'YahooItemSearchURL':"https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch",
-    'appid':APP_ID,
+    'appid':st.secrets["APP_ID"],
 }
 #楽天市場
 MAX_PAGE = 1
