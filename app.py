@@ -149,11 +149,11 @@ def main():
     
 
     
-    col1, col2 = st.columns(2, gap="large")
-    with col1:
-        st.header("A cat")
-    with col2:
-        st.header("A cat")
+#     col1, col2 = st.columns(2, gap="large")
+#     with col1:
+#         st.header("A cat")
+#     with col2:
+#         st.header("A cat")
     
     if len(keywords) != 0:
         if option_rakuten:
