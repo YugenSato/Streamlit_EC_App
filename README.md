@@ -1,0 +1,2 @@
+# Streamlit_EC_App
+Streamlitを用いたECサイト情報比較アプリ
