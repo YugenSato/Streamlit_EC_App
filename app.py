@@ -146,9 +146,7 @@ def main():
     st.title('ECサイト情報比較アプリ')
     keywords = ''
     keywords = st.text_input('検索アイテムのキーワードを入力','')
-    
-
-    
+  
 #     col1, col2 = st.columns(2, gap="large")
 #     with col1:
 #         st.header("A cat")
