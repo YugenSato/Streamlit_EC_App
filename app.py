@@ -1,9 +1,34 @@
 import requests,json
 import streamlit as st
-from config import RAKUTEN_CLIENT_ME,YAHOO_CLIENT_ME
+#from config import RAKUTEN_CLIENT_ME,YAHOO_CLIENT_ME
 from time import sleep
 import pandas as pd
 
+RAKUTEN_CLIENT_ME = {
+    'APPLICATION_ID':APPLICATION_ID,
+    'APPLICATION_SECRET':APPLICATION_SECRET,
+    'AFF_ID':AFF_ID,
+    'REQ_URL':'https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706',
+    'WANT_ITEMS':['itemName',
+                  'genreId',
+                  'itemPrice',
+                  'catchcopy',
+                  'itemCaption',
+                  'reviewAverage',
+                  # 'reviewCount',
+                  # 'shopCode',
+                  'shopName',
+                  'itemUrl',
+                  'smallImageUrls',
+                  'mediumImageUrls',
+                 ]
+    
+}
+
+YAHOO_CLIENT_ME = {
+    'YahooItemSearchURL':"https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch",
+    'appid':appid,
+}
 #楽天市場
 MAX_PAGE = 1
 HITS_PER_PAGE = 3
