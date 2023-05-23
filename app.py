@@ -27,7 +27,7 @@ RAKUTEN_CLIENT_ME = {
 
 YAHOO_CLIENT_ME = {
     'YahooItemSearchURL':"https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch",
-    'appid':appid,
+    'appid':APP_ID,
 }
 #楽天市場
 MAX_PAGE = 1
