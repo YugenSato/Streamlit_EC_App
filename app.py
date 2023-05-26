@@ -1,9 +1,11 @@
 import requests,json
 import streamlit as st
-#from config import RAKUTEN_CLIENT_ME,YAHOO_CLIENT_ME
+# from config import RAKUTEN_CLIENT_ME,YAHOO_CLIENT_ME
 from time import sleep
 import pandas as pd
 
+#楽天市場
+MAX_PAGE = 1
 RAKUTEN_CLIENT_ME = {
     'APPLICATION_ID':st.secrets["APPLICATION_ID"],
     'APPLICATION_SECRET':st.secrets["APPLICATION_SECRET"],
@@ -29,9 +31,7 @@ YAHOO_CLIENT_ME = {
     'YahooItemSearchURL':"https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch",
     'appid':st.secrets["APP_ID"],
 }
-#楽天市場
-MAX_PAGE = 1
-HITS_PER_PAGE = 3
+
 REQ_URL = RAKUTEN_CLIENT_ME['REQ_URL']
 WANT_ITEMS = RAKUTEN_CLIENT_ME['WANT_ITEMS']
 
@@ -43,13 +43,10 @@ req_params = {
     'format':'json',
     'formatVersion':'2',
     'keyword':'',
-    'hits':HITS_PER_PAGE,
     'sort':'+itemPrice',
     'page':0,
     'minPrice':100
 }
-#'postageFlag':1 #送料フラグ 0->全て,1->送料込み
-
 
 def create_rakuten_data(arg_keywords):
     #キーワードループ
@@ -75,6 +72,29 @@ def create_rakuten_data(arg_keywords):
                 
                 tmp_df = pd.DataFrame(res['Items'])[WANT_ITEMS]
                 df = pd.concat([df,tmp_df],ignore_index=True)
+                # st.dataframe(pd.DataFrame(res['Items']))
+                
+                for i, x in enumerate(df.iterrows()):
+                    with st.expander("検索結果{}".format(i+1), expanded=True):
+                        item_name = x[1]['itemName']
+                        price = x[1]['itemPrice']
+                        image = x[1]['mediumImageUrls']
+                        url = x[1]['itemUrl']
+                        caption = x[1]['itemCaption']
+                        
+                    with st.expander("検索結果{}".format(i+1), expanded=True):
+                        cols = st.columns([1]*len(image))
+                        st.write("<h3>{}</h3>".format(item_name),unsafe_allow_html=True)
+                        for i in range(len(image)):
+                            with cols[i]:
+                                st.image(image[i])
+                        
+                        st.write("<h5>価格：{}円</h5>".format(price),unsafe_allow_html=True)
+                        # st.write("<h5>レビュー：{}({}件)</h5>".format(review['rate'], review['count']),unsafe_allow_html=True)
+                        # st.write("レビューURL：{}".format(review['url']))
+                        st.write("商品説明：")
+                        st.write(caption)
+                        st.write("商品URL", url)
 
                 for x in df.iterrows():
                     item_name = x[1]['itemName']
@@ -98,7 +118,8 @@ def create_rakuten_data(arg_keywords):
             #リクエスト制限回避
             sleep(1)
             
-def creat_yahoo_data(arg_keywords, Lowest_price=0, Highest_price=1000000):
+
+def creat_yahoo_data(arg_keywords, Lowest_price=0, Highest_price=1000000, HITS_PER_PAGE=1):
     
     keywords = arg_keywords.replace('\u3000',' ')
 
@@ -118,6 +139,7 @@ def creat_yahoo_data(arg_keywords, Lowest_price=0, Highest_price=1000000):
         with st.expander("検索結果{}".format(i+1), expanded=True):
             col1, col2 = st.columns([6,1])
             with col1:
+                st.write("<h3 href={}>{}</h3>".format(res_dict['hits'][i]['url'], item_name),unsafe_allow_html=True)
                 st.subheader(item_name)
             with col2:
                 st.image(image)
@@ -131,27 +153,62 @@ def creat_yahoo_data(arg_keywords, Lowest_price=0, Highest_price=1000000):
             st.write("商品URL", res_dict['hits'][i]['url'])
 
 def main():
-    
-    st.sidebar.write('検索対象')
+    def input_change():
+        if len(st.session_state.keywords) != 0:
+            st.session_state.buttonDisabled = False
+        elif len(st.session_state.keywords) == 0: 
+            st.session_state.buttonDisabled = True
+    st.set_page_config(layout="wide")
+            
+    #サイドバー部分記述
+    st.sidebar.write('<h3>検索対象</h3>', unsafe_allow_html=True)
     option_rakuten = st.sidebar.checkbox('楽天市場', value=True)
     option_yahoo = st.sidebar.checkbox('Yahoo!ショッピング', value=True)
-
+    st.sidebar.write('')
+    st.sidebar.write('<h3>検索件数(クリックして直接入力)</h3>', unsafe_allow_html=True)
+    HITS_PER_PAGE = st.sidebar.number_input('', 1, 100, 3, label_visibility='collapsed')
+    st.sidebar.write('')
+    st.sidebar.write('<h3>価格範囲の指定</h3>', unsafe_allow_html=True)
     min_price, max_price = st.sidebar.select_slider(
-        '価格範囲の設定',
+        '',
         options=[ _ for _ in range(0,10500,500)],
         value=(0, 2000),
+        label_visibility='collapsed',
     )
     req_params['minPrice'] = min_price
+    req_params['hits'] = HITS_PER_PAGE
     
+    #メイン画面
     st.title('ECサイト情報比較アプリ')
-    keywords = ''
-    keywords = st.text_input('検索アイテムのキーワードを入力','')
+    st.write('<h6>検索アイテムのキーワードを入力↓</h6>', unsafe_allow_html=True)
     
-    if len(keywords) != 0:
-        if option_rakuten:
-            create_rakuten_data([keywords])
-        if option_yahoo:
-            creat_yahoo_data(keywords, min_price, max_price)
+    st.session_state.buttonDisabled = True
+    st.session_state.keywords = ''
+    col1, col2 = st.columns([6,1])
+    with col1:
+        st.session_state.keywords = st.text_input('', label_visibility='collapsed', on_change=input_change)
+
+    if len(st.session_state.keywords) != 0:
+        st.session_state['buttonDisabled'] = False
+    else:
+        st.session_state['buttonDisabled'] = True
+
+    with col2:
+        st.session_state.button_clicked = st.button('検索', disabled=st.session_state['buttonDisabled'])
+        
+    if st.session_state.button_clicked:
+        if len(st.session_state.keywords) != 0:
+            col_rakuten, col_yahoo = st.columns([1,1])
+            tab1, tab2 = st.tabs(["楽天市場", "yahoo!ショッピング"])
+            with tab1:
+                # st.subheader('楽天市場')
+                if option_rakuten:
+                    create_rakuten_data([st.session_state.keywords])
+            with tab2:
+                # st.subheader('yahoo!ショッピング')
+                if option_yahoo:
+                    creat_yahoo_data(st.session_state.keywords, min_price, max_price, HITS_PER_PAGE)
+
 
 if __name__ == "__main__":
     main()
